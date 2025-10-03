@@ -1,0 +1,273 @@
+# DDD Core Domain Charts エージェント設定ファイル
+
+# 基本設定
+general:
+  version: "1.0.0"
+  environment: "${ENV:-production}"  # development, staging, production
+  debug: false
+  timezone: "Asia/Tokyo"
+
+# AI モデル設定
+ai_model:
+  provider: "openai"  # openai, anthropic, azure
+  model: "${AI_MODEL:-gpt-4}"
+  temperature: 0.0
+  top_p: 1.0
+  presence_penalty: 0
+  frequency_penalty: 0
+  max_tokens: 4096
+  response_format: "json_object"
+  timeout: 30000  # ミリ秒
+
+# スコアリング設定（カスタマイズ可能）
+scoring:
+  # 戦略的重要度 (Strategic Importance)
+  strategic_importance:
+    weights:
+      revenue_impact: 0.3
+      customer_facing: 0.3
+      competitive_advantage: 0.2
+      operational_criticality: 0.2
+    thresholds:
+      high: 4    # 4以上で高重要度
+      medium: 3  # 3で中重要度
+      low: 2     # 2以下で低重要度
+
+  # 差別化余地 (Differentiation Potential)
+  differentiation_potential:
+    weights:
+      unique_algorithm: 0.35
+      domain_expertise: 0.35
+      innovation_opportunity: 0.3
+    thresholds:
+      high: 4
+      medium: 3
+      low: 2
+
+  # 外部化適性 (Externalizability)
+  externalizability:
+    weights:
+      standardization: 0.3
+      market_availability: 0.3
+      integration_complexity: 0.2
+      data_sensitivity: 0.2
+    thresholds:
+      high: 4    # 外部化容易
+      medium: 3  # 部分的に外部化可能
+      low: 2     # 外部化困難
+
+# 分類規則（環境別にカスタマイズ可能）
+classification_rules:
+  production:
+    core:
+      condition: "(S + Δ) >= 8 AND X <= 3"
+      min_evidence: 3
+    supporting:
+      condition: "S >= 3 AND 2 <= X <= 4 AND NOT Core"
+      min_evidence: 2
+    generic:
+      condition: "X >= 4 OR (S <= 2 AND Δ <= 3)"
+      min_evidence: 1
+
+  development:
+    # 開発環境では緩い基準
+    core:
+      condition: "(S + Δ) >= 7 AND X <= 3"
+      min_evidence: 2
+    supporting:
+      condition: "S >= 2 AND X <= 4 AND NOT Core"
+      min_evidence: 1
+    generic:
+      condition: "X >= 3 OR (S <= 2 AND Δ <= 2)"
+      min_evidence: 1
+
+# エージェント別設定
+agents:
+  analyzer:
+    enabled: true
+    timeout: 10000
+    max_modules: 50
+    min_evidence: 1
+    custom_logic_thickness:
+      thick_threshold: 1000    # LOC
+      medium_threshold: 500
+      thin_threshold: 100
+
+  scorer:
+    enabled: true
+    timeout: 15000
+    use_weighted_scoring: true
+    default_score: 3  # 証拠不足時のデフォルト値
+    confidence_threshold: 0.7
+
+  contradiction_checker:
+    enabled: true
+    timeout: 5000
+    max_iterations: 3
+    strict_mode: true
+
+  chart_formatter:
+    enabled: true
+    timeout: 5000
+    chart_library: "vega-lite"
+    color_scheme: "category10"
+    interactive: true
+
+# 処理制限
+limits:
+  max_modules_per_request: 100
+  max_dependencies_per_module: 50
+  max_evidence_per_module: 20
+  max_processing_time: 60000  # ミリ秒
+  max_memory_usage: 512  # MB
+
+# キャッシュ設定
+cache:
+  enabled: true
+  ttl: 3600  # 秒
+  max_size: 100  # MB
+  strategy: "lru"  # lru, fifo, lfu
+
+# ロギング設定
+logging:
+  level: "${LOG_LEVEL:-info}"  # debug, info, warn, error
+  format: "json"  # json, text
+  outputs:
+    - type: "file"
+      path: "./logs/${environment}/app.log"
+      rotation: "daily"
+      retention: "30d"
+      compress: true
+    - type: "console"
+      enabled: "${CONSOLE_LOG:-false}"
+    - type: "syslog"
+      enabled: false
+      host: "localhost"
+      port: 514
+
+# モニタリング設定
+monitoring:
+  enabled: true
+  metrics:
+    enabled: true
+    endpoint: "/metrics"
+    port: 9090
+  tracing:
+    enabled: false
+    provider: "jaeger"
+    endpoint: "http://localhost:14268/api/traces"
+  health_check:
+    enabled: true
+    endpoint: "/health"
+    interval: 30000
+
+# セキュリティ設定
+security:
+  api_key_required: true
+  rate_limiting:
+    enabled: true
+    max_requests_per_minute: 100
+    max_requests_per_hour: 1000
+  allowed_origins:
+    - "http://localhost:*"
+    - "https://*.example.com"
+  input_validation:
+    enabled: true
+    max_json_depth: 10
+    max_string_length: 10000
+
+# エラーハンドリング
+error_handling:
+  retry_policy:
+    max_attempts: 3
+    base_delay: 1000
+    max_delay: 10000
+    multiplier: 2
+    jitter: true
+  circuit_breaker:
+    enabled: true
+    threshold: 5
+    timeout: 60000
+    half_open_requests: 3
+
+# 環境別オーバーライド
+environments:
+  development:
+    ai_model:
+      temperature: 0.2
+    logging:
+      level: "debug"
+    monitoring:
+      enabled: false
+    security:
+      api_key_required: false
+      rate_limiting:
+        enabled: false
+
+  staging:
+    limits:
+      max_modules_per_request: 50
+    cache:
+      ttl: 1800
+
+  production:
+    ai_model:
+      model: "gpt-4-turbo"
+    logging:
+      level: "warn"
+    monitoring:
+      tracing:
+        enabled: true
+    security:
+      rate_limiting:
+        max_requests_per_minute: 500
+
+# フィーチャーフラグ
+features:
+  experimental_scorer: false
+  parallel_processing: true
+  auto_recovery: true
+  detailed_rationale: false
+  vega_lite_v6: false
+
+# 外部サービス設定
+external_services:
+  database:
+    type: "postgresql"
+    host: "${DB_HOST:-localhost}"
+    port: 5432
+    name: "ddd_mapper"
+    pool_size: 10
+
+  redis:
+    enabled: false
+    host: "${REDIS_HOST:-localhost}"
+    port: 6379
+    db: 0
+
+  webhook:
+    enabled: false
+    url: "${WEBHOOK_URL}"
+    events:
+      - "analysis_complete"
+      - "error_occurred"
+
+# カスタム拡張
+extensions:
+  custom_scorers:
+    - name: "security_scorer"
+      enabled: false
+      weight: 0.2
+      module: "./extensions/security_scorer.js"
+
+  custom_validators:
+    - name: "industry_specific"
+      enabled: false
+      module: "./extensions/industry_validator.js"
+
+# デバッグ設定
+debug:
+  save_intermediate_results: false
+  output_directory: "./debug/"
+  include_raw_scores: false
+  include_timings: false
