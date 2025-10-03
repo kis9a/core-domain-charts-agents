@@ -1,0 +1,376 @@
+{
+  "name": "E-Commerce Platform Golden Test",
+  "description": "完全なE-commerceプラットフォームのサブドメイン分析",
+  "input": {
+    "modules": [
+      {
+        "name": "product-catalog",
+        "loc": 15000,
+        "change_freq": 85,
+        "dep_in": 25,
+        "dep_out": 8,
+        "top_terms": ["product", "catalog", "search", "filter", "recommendation"],
+        "evidence_fragments": [
+          "catalog/search.py: advanced_search()",
+          "catalog/recommendation_engine.py: ml_recommend()",
+          "catalog/filters.py: apply_complex_filters()"
+        ],
+        "readme_excerpt": "Product catalog with ML-powered recommendations and advanced search",
+        "public_api": ["GET /api/v1/products", "POST /api/v1/products/search"]
+      },
+      {
+        "name": "pricing-engine",
+        "loc": 8500,
+        "change_freq": 120,
+        "dep_in": 30,
+        "dep_out": 5,
+        "top_terms": ["pricing", "strategy", "dynamic", "discount", "optimization"],
+        "evidence_fragments": [
+          "pricing/dynamic_pricer.py: calculate_optimal_price()",
+          "pricing/strategies.py: apply_strategy()",
+          "pricing/ml_optimizer.py: train_pricing_model()"
+        ],
+        "readme_excerpt": "Dynamic pricing with ML optimization and A/B testing",
+        "public_api": ["POST /api/v1/pricing/calculate", "GET /api/v1/pricing/strategy"]
+      },
+      {
+        "name": "payment-gateway",
+        "loc": 3000,
+        "change_freq": 15,
+        "dep_in": 12,
+        "dep_out": 18,
+        "top_terms": ["payment", "stripe", "paypal", "gateway", "transaction"],
+        "evidence_fragments": [
+          "payment/stripe_adapter.py: process_payment()",
+          "payment/paypal_adapter.py: handle_webhook()",
+          "payment/gateway.py: route_payment()"
+        ],
+        "readme_excerpt": "Payment gateway integration with Stripe, PayPal, and others",
+        "public_api": ["POST /api/v1/payments/process"]
+      },
+      {
+        "name": "user-authentication",
+        "loc": 2500,
+        "change_freq": 8,
+        "dep_in": 5,
+        "dep_out": 15,
+        "top_terms": ["auth", "jwt", "oauth", "login", "session"],
+        "evidence_fragments": [
+          "auth/jwt_handler.py: generate_token()",
+          "auth/oauth_provider.py: handle_oauth()",
+          "auth/session.py: validate_session()"
+        ],
+        "readme_excerpt": "Standard authentication with JWT and OAuth providers",
+        "public_api": ["POST /api/v1/auth/login", "POST /api/v1/auth/refresh"]
+      },
+      {
+        "name": "inventory-management",
+        "loc": 6000,
+        "change_freq": 65,
+        "dep_in": 20,
+        "dep_out": 10,
+        "top_terms": ["inventory", "stock", "warehouse", "fulfillment", "tracking"],
+        "evidence_fragments": [
+          "inventory/stock_tracker.py: update_stock_levels()",
+          "inventory/warehouse_optimizer.py: optimize_distribution()",
+          "inventory/predictive_stock.py: forecast_demand()"
+        ],
+        "readme_excerpt": "Real-time inventory tracking with predictive restocking",
+        "public_api": ["GET /api/v1/inventory/status", "POST /api/v1/inventory/update"]
+      },
+      {
+        "name": "logging-service",
+        "loc": 1500,
+        "change_freq": 5,
+        "dep_in": 3,
+        "dep_out": 0,
+        "top_terms": ["log", "elk", "monitoring", "metrics", "trace"],
+        "evidence_fragments": [
+          "logging/elk_shipper.py: ship_logs()",
+          "logging/formatter.py: format_log()"
+        ],
+        "readme_excerpt": "Centralized logging with ELK stack",
+        "public_api": []
+      }
+    ],
+    "dependencies": [
+      {"from": "product-catalog", "to": "pricing-engine", "weight": 15},
+      {"from": "product-catalog", "to": "inventory-management", "weight": 20},
+      {"from": "pricing-engine", "to": "product-catalog", "weight": 10},
+      {"from": "payment-gateway", "to": "stripe-sdk", "weight": 25},
+      {"from": "payment-gateway", "to": "paypal-sdk", "weight": 20},
+      {"from": "user-authentication", "to": "jwt-library", "weight": 15},
+      {"from": "inventory-management", "to": "product-catalog", "weight": 12},
+      {"from": "logging-service", "to": "elk-stack", "weight": 30}
+    ]
+  },
+  "expected_output": {
+    "items": [
+      {
+        "name": "product-catalog",
+        "purpose": "商品の検索、フィルタリング、レコメンデーション提供",
+        "capabilities": [
+          "高度な商品検索",
+          "ML駆動のレコメンデーション",
+          "複雑なフィルタリング"
+        ],
+        "integration_points": [
+          "pricing-engine",
+          "inventory-management"
+        ],
+        "custom_logic_thickness": "thick",
+        "scores": {
+          "S": 5,
+          "Δ": 5,
+          "X": 2
+        },
+        "classification": "Core",
+        "change_freq": 85,
+        "evidence": [
+          "catalog/recommendation_engine.py: ml_recommend()",
+          "高い変更頻度（85）",
+          "多数の内部依存（dep_in: 25）"
+        ],
+        "uncertainties": [],
+        "rationale": "MLレコメンデーションと高度な検索は競争優位性の源泉"
+      },
+      {
+        "name": "pricing-engine",
+        "purpose": "動的価格設定と価格最適化",
+        "capabilities": [
+          "動的価格計算",
+          "価格戦略の適用",
+          "ML価格最適化"
+        ],
+        "integration_points": [
+          "product-catalog"
+        ],
+        "custom_logic_thickness": "thick",
+        "scores": {
+          "S": 5,
+          "Δ": 5,
+          "X": 1
+        },
+        "classification": "Core",
+        "change_freq": 120,
+        "evidence": [
+          "pricing/ml_optimizer.py: train_pricing_model()",
+          "非常に高い変更頻度（120）",
+          "独自のML最適化ロジック"
+        ],
+        "uncertainties": [],
+        "rationale": "動的価格設定は直接的な収益インパクトを持つ中核機能"
+      },
+      {
+        "name": "payment-gateway",
+        "purpose": "決済処理の統合と管理",
+        "capabilities": [
+          "複数決済プロバイダー統合",
+          "決済ルーティング",
+          "Webhook処理"
+        ],
+        "integration_points": [
+          "stripe-sdk",
+          "paypal-sdk"
+        ],
+        "custom_logic_thickness": "thin",
+        "scores": {
+          "S": 4,
+          "Δ": 2,
+          "X": 5
+        },
+        "classification": "Generic",
+        "change_freq": 15,
+        "evidence": [
+          "payment/stripe_adapter.py: process_payment()",
+          "低い変更頻度（15）",
+          "外部SDKへの高依存"
+        ],
+        "uncertainties": [],
+        "rationale": "標準的な決済ゲートウェイ統合で外部サービスで代替可能"
+      },
+      {
+        "name": "user-authentication",
+        "purpose": "ユーザー認証と認可管理",
+        "capabilities": [
+          "JWT認証",
+          "OAuth統合",
+          "セッション管理"
+        ],
+        "integration_points": [
+          "jwt-library",
+          "oauth-providers"
+        ],
+        "custom_logic_thickness": "thin",
+        "scores": {
+          "S": 3,
+          "Δ": 1,
+          "X": 5
+        },
+        "classification": "Generic",
+        "change_freq": 8,
+        "evidence": [
+          "auth/jwt_handler.py: generate_token()",
+          "非常に低い変更頻度（8）",
+          "標準的な認証実装"
+        ],
+        "uncertainties": [],
+        "rationale": "標準的な認証でAuth0等のSaaSで完全代替可能"
+      },
+      {
+        "name": "inventory-management",
+        "purpose": "在庫追跡と需要予測",
+        "capabilities": [
+          "リアルタイム在庫追跡",
+          "倉庫最適化",
+          "需要予測"
+        ],
+        "integration_points": [
+          "product-catalog"
+        ],
+        "custom_logic_thickness": "medium",
+        "scores": {
+          "S": 4,
+          "Δ": 3,
+          "X": 3
+        },
+        "classification": "Supporting",
+        "change_freq": 65,
+        "evidence": [
+          "inventory/predictive_stock.py: forecast_demand()",
+          "中程度の変更頻度（65）",
+          "予測ロジックのカスタマイズ"
+        ],
+        "uncertainties": [],
+        "rationale": "重要だが差別化要素ではない、部分的に外部化可能"
+      },
+      {
+        "name": "logging-service",
+        "purpose": "ログ収集と監視",
+        "capabilities": [
+          "ログ収集",
+          "ELKスタック統合",
+          "メトリクス収集"
+        ],
+        "integration_points": [
+          "elk-stack"
+        ],
+        "custom_logic_thickness": "thin",
+        "scores": {
+          "S": 2,
+          "Δ": 1,
+          "X": 5
+        },
+        "classification": "Generic",
+        "change_freq": 5,
+        "evidence": [
+          "logging/elk_shipper.py: ship_logs()",
+          "非常に低い変更頻度（5）",
+          "標準的なELK統合"
+        ],
+        "uncertainties": [],
+        "rationale": "完全に汎用的でDatadog等で代替可能"
+      }
+    ],
+    "chart": {
+      "items": [
+        {
+          "name": "product-catalog",
+          "S": 5,
+          "Δ": 5,
+          "X": 2,
+          "classification": "Core",
+          "change_freq": 85
+        },
+        {
+          "name": "pricing-engine",
+          "S": 5,
+          "Δ": 5,
+          "X": 1,
+          "classification": "Core",
+          "change_freq": 120
+        },
+        {
+          "name": "payment-gateway",
+          "S": 4,
+          "Δ": 2,
+          "X": 5,
+          "classification": "Generic",
+          "change_freq": 15
+        },
+        {
+          "name": "user-authentication",
+          "S": 3,
+          "Δ": 1,
+          "X": 5,
+          "classification": "Generic",
+          "change_freq": 8
+        },
+        {
+          "name": "inventory-management",
+          "S": 4,
+          "Δ": 3,
+          "X": 3,
+          "classification": "Supporting",
+          "change_freq": 65
+        },
+        {
+          "name": "logging-service",
+          "S": 2,
+          "Δ": 1,
+          "X": 5,
+          "classification": "Generic",
+          "change_freq": 5
+        }
+      ],
+      "vegaLite": {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "data": {
+          "name": "items"
+        },
+        "mark": {
+          "type": "circle"
+        },
+        "encoding": {
+          "x": {
+            "field": "X",
+            "type": "quantitative",
+            "scale": {
+              "domain": [0, 5]
+            },
+            "title": "Externalizability (X)"
+          },
+          "y": {
+            "field": "S",
+            "type": "quantitative",
+            "scale": {
+              "domain": [0, 5]
+            },
+            "title": "Strategic Importance (S)"
+          },
+          "size": {
+            "field": "change_freq",
+            "type": "quantitative",
+            "title": "Change Frequency"
+          },
+          "color": {
+            "field": "classification",
+            "type": "nominal",
+            "scale": {
+              "domain": ["Core", "Supporting", "Generic"],
+              "range": ["#e41a1c", "#377eb8", "#4daf4a"]
+            }
+          },
+          "tooltip": [
+            {"field": "name", "type": "nominal"},
+            {"field": "S", "type": "quantitative"},
+            {"field": "Δ", "type": "quantitative"},
+            {"field": "X", "type": "quantitative"},
+            {"field": "classification", "type": "nominal"},
+            {"field": "change_freq", "type": "quantitative"}
+          ]
+        }
+      }
+    }
+  }
+}
